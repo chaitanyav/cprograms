@@ -2,6 +2,7 @@
  * Program to copy between two files
  * usage cp file1 file2
  *
+ * Author: NagaChaitanya Vellanki
  *
  */
 

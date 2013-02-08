@@ -1,5 +1,7 @@
 /*
  *
+ * Author: NagaChaitanya Vellanki
+ *
  * s<offset>: seek to the byte offset from the start of the file
  * r<length>: read length bytes from file, starting from current location and
  * display in text form
