@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -18,20 +19,27 @@
 typedef enum {false, true} bool;
 
 void sigHandler(int sigNum) {
-  printf("\nIgnoring interrupt\n");
+  fprintf(stdout, "\nIgnoring interrupt\n");
 }
 
 void printUsage() {
-  printf("Usage:\n tee [OPTION] \n\n OPTIONS: \n -a To append to the file\n -i ignore interrupt\n -f file \n\n If file is - it is written to stdout\n");
-  exit(EXIT_FAILURE);
+  fprintf(stdout, "Usage: tee [OPTION] \n\
+      \n\
+      OPTIONS: \n\
+      -a To append to the file\n\
+      -i ignore interrupt\n\
+      -h help\n\n\
+      If file is - it is written to stdout\n");
+  exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char *argv[]) {
-  int fd, option, i;
+  int32_t fd, option, i, j, numFiles;
   bool append, file;
   mode_t filePerms;
   ssize_t numRead, numWritten;
   char buf[BUF_SIZE];
+  int32_t *fileDescriptors, *isFile;
 
   file = false;
   append = false;
@@ -39,8 +47,7 @@ int main(int argc, char *argv[]) {
   /* rw-rw-rw */
   filePerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 
-  while((option = getopt(argc, argv, "aif:h")) != -1) {
-    printf("%c\n", option);
+  while((option = getopt(argc, argv, "aih")) != -1) {
     switch(option) {
 
       case 'a':
@@ -51,54 +58,76 @@ int main(int argc, char *argv[]) {
         signal(SIGINT, sigHandler);
         break;
 
-      case 'f':
-        file = true;
-        if(strcmp(optarg, "-") != 0) {
-          if(append) {
-            fd = open(optarg, O_WRONLY | O_APPEND, filePerms);
-          } else {
-            fd = open(optarg, O_WRONLY | O_CREAT | O_TRUNC, filePerms);
-          }
-        } else {
-          fd = STDOUT_FILENO;
-        }
-        break;
-
       case 'h': printUsage();
 
-      default: printf("Try -h for more information");
+      default: fprintf(stderr, "Try -h for more information\n");
                exit(EXIT_FAILURE);
     }
   }
 
-  if(!file) {
-    fd = STDOUT_FILENO;
+  numFiles = argc - optind;
+
+  if(numFiles) {
+    fileDescriptors = malloc(sizeof(int32_t) * numFiles);
+    if(fileDescriptors == NULL) {
+      fprintf(stderr, "Memory allocation failed for file descriptors\n");
+      exit(EXIT_FAILURE);
+    }
+
+    isFile = malloc(sizeof(int32_t)* numFiles);
+    if(isFile == NULL) {
+      fprintf(stderr, "Memory allocation failed for isFile\n");
+      exit(EXIT_FAILURE);
+    }
+
+    for(i = optind; i < argc ; i++) {
+      j = i - optind;
+      if(strcmp(argv[i], "-") != 0) {
+        isFile[j] = true;
+
+        if(append) {
+          fileDescriptors[j] = open(argv[i], O_WRONLY | O_CREAT | O_APPEND, filePerms);
+        } else {
+          fileDescriptors[j] = open(argv[i], O_WRONLY | O_CREAT | O_TRUNC, filePerms);
+        }
+      } else {
+        isFile[j] = false;
+        fileDescriptors[j] = STDOUT_FILENO;
+      }
+    }
   }
 
   /* reading stdin and writing to the file, stdout */
   while((numRead = read(STDIN_FILENO, buf, BUF_SIZE)) > 0) {
-    if(file && ((numWritten = write(fd, buf, numRead)) == -1)) {
-      printf("Write failed to %s\n", argv[1]);
-      exit(EXIT_FAILURE);
-    }
+    for(i = 0; i < numFiles; i++) {
+      if((numWritten = write(fileDescriptors[i], buf, numRead)) == -1) {
+        fprintf(stderr, "Write failed to %s\n", argv[i + optind]);
+        exit(EXIT_FAILURE);
+      }
 
-    if((fd != STDOUT_FILENO) && (fdatasync(fd) == -1)) {
-      printf("Sync failed\n");
+      if(isFile[i] && (fdatasync(fileDescriptors[i]) == -1)) {
+        fprintf(stderr, "Sync failed\n");
+      }
     }
 
     buf[numRead] = '\0';
-    printf("%s", buf);
+    fprintf(stdout, "%s", buf);
   }
 
   if(numRead == -1) {
-    printf("Read failed from stdin\n");
+    fprintf(stderr, "Read failed from stdin\n");
     exit(EXIT_FAILURE);
   }
 
-  if(close(fd) == -1) {
-    printf("Close failed on file descriptor\n");
-    exit(EXIT_FAILURE);
+  for(i = 0; i < numFiles; i++) {
+    if(close(fileDescriptors[i]) == -1) {
+      fprintf(stderr, "Close failed on file descriptor\n");
+      exit(EXIT_FAILURE);
+    }
   }
+
+  free(fileDescriptors);
+  free(isFile);
 
   exit(EXIT_SUCCESS);
 }
