@@ -24,6 +24,7 @@ void sigHandler(int sigNum) {
 
 void printUsage() {
   fprintf(stdout, "Usage: tee [OPTION]... [FILE]... \n\
+      Copy standard input to each FILE, and also to standard output.\n\
       \n\
       OPTIONS: \n\
       -a To append to the file\n\
