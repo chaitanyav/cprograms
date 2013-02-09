@@ -23,7 +23,7 @@ void sigHandler(int sigNum) {
 }
 
 void printUsage() {
-  fprintf(stdout, "Usage: tee [OPTION] \n\
+  fprintf(stdout, "Usage: tee [OPTION]... [FILE]... \n\
       \n\
       OPTIONS: \n\
       -a To append to the file\n\
