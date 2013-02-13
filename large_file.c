@@ -2,7 +2,7 @@
  *
  * Author: NagaChaitanya Vellanki
  *
- *
+ * NOTE: another way to access large files is to use the macro _FILE_OFFSET_BITS 64
  */
 #define _LARGEFILE64_SOURCE
 #include <stdio.h>
