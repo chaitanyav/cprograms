@@ -15,7 +15,6 @@
 int my_dup(int fd) {
   int new_fd;
   new_fd = fcntl(fd, F_DUPFD);
-
   return new_fd;
 }
 
@@ -30,6 +29,11 @@ int main(int argc, char *argv[]) {
   }
 
   new_fd = my_dup(fd);
+  if(new_fd == -1) {
+    fprintf(stderr, "error on my_dup\n");
+    exit(EXIT_FAILURE);
+  }
+
   new_flags = fcntl(new_fd, F_GETFL);
   if(new_flags == -1) {
     fprintf(stderr, "error on fcntl\n");
