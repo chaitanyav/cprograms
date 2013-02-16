@@ -17,6 +17,8 @@ int my_dup2(int old_fd, int new_fd) {
 
   if(fcntl(old_fd, F_GETFL) == -1) {
     fprintf(stderr, "%s %d\n", strerror(errno), old_fd);
+    errno = EBADF;
+    return -1;
   }
 
   if((new_fd != old_fd)) {
