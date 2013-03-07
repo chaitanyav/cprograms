@@ -7,11 +7,22 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <errno.h>
 #include <getopt.h>
+
+void err_exit(const char *format, ...) {
+  va_list args;
+
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
+
+  exit(EXIT_FAILURE);
+}
 
 void printUsage(void) {
   fprintf(stdout, "Usage: whoami [OPTION]...\n\
@@ -28,9 +39,7 @@ int main(int argc, char *argv[]) {
   while((option = getopt(argc, argv, "h")) != -1) {
     switch(option) {
       case 'h': printUsage();
-      default:
-                fprintf(stdout, "Try 'whoami -h' for more information\n");
-                exit(EXIT_FAILURE);
+      default:  err_exit("Try 'whoami -h' for more information\n");
     }
   }
 
