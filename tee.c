@@ -8,15 +8,27 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <getopt.h>
+#include<string.h>
 
 #define BUF_SIZE 1024
 
 typedef enum {false, true} bool;
+
+void err_exit(const char *format, ...) {
+  va_list args;
+
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
+
+  exit(EXIT_FAILURE);
+}
 
 void sigHandler(int sigNum) {
   fprintf(stdout, "\nIgnoring interrupt\n");
@@ -35,14 +47,13 @@ void printUsage() {
 }
 
 int main(int argc, char *argv[]) {
-  int32_t fd, option, i, j, numFiles;
-  bool append, file;
+  int32_t option, i, j, numFiles;
+  bool append;
   mode_t filePerms;
   ssize_t numRead, numWritten;
   char buf[BUF_SIZE];
   int32_t *fileDescriptors, *isFile;
 
-  file = false;
   append = false;
 
   /* rw-rw-rw */
@@ -61,8 +72,7 @@ int main(int argc, char *argv[]) {
 
       case 'h': printUsage();
 
-      default: fprintf(stderr, "Try -h for more information\n");
-               exit(EXIT_FAILURE);
+      default: err_exit("Try -h for more information\n");
     }
   }
 
@@ -71,14 +81,12 @@ int main(int argc, char *argv[]) {
   if(numFiles) {
     fileDescriptors = malloc(sizeof(int32_t) * numFiles);
     if(fileDescriptors == NULL) {
-      fprintf(stderr, "Memory allocation failed for file descriptors\n");
-      exit(EXIT_FAILURE);
+      err_exit("Memory allocation failed for file descriptors\n");
     }
 
     isFile = malloc(sizeof(int32_t)* numFiles);
     if(isFile == NULL) {
-      fprintf(stderr, "Memory allocation failed for isFile\n");
-      exit(EXIT_FAILURE);
+      err_exit("Memory allocation failed for isFile\n");
     }
 
     for(i = optind; i < argc ; i++) {
@@ -102,8 +110,7 @@ int main(int argc, char *argv[]) {
   while((numRead = read(STDIN_FILENO, buf, BUF_SIZE)) > 0) {
     for(i = 0; i < numFiles; i++) {
       if((numWritten = write(fileDescriptors[i], buf, numRead)) == -1) {
-        fprintf(stderr, "Write failed to %s\n", argv[i + optind]);
-        exit(EXIT_FAILURE);
+        err_exit("Write failed to %s\n", argv[i + optind]);
       }
 
       if(isFile[i] && (fdatasync(fileDescriptors[i]) == -1)) {
@@ -116,14 +123,12 @@ int main(int argc, char *argv[]) {
   }
 
   if(numRead == -1) {
-    fprintf(stderr, "Read failed from stdin\n");
-    exit(EXIT_FAILURE);
+    err_exit("Read failed from stdin\n");
   }
 
   for(i = 0; i < numFiles; i++) {
     if(close(fileDescriptors[i]) == -1) {
-      fprintf(stderr, "Close failed on file descriptor\n");
-      exit(EXIT_FAILURE);
+      err_exit("Close failed on file descriptor\n");
     }
   }
 
