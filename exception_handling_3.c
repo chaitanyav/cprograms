@@ -4,6 +4,8 @@
  * TRY/THROW/CATCH/FINALLY - example
  * Reference: http://www.di.unipi.it/~nids/docs/longjump_try_trow_catch.html
  *
+ * use gcc -E -P exception_handling_3.c to see the result of the preprocessing
+ * step
  */
 
 #include <stdio.h>
