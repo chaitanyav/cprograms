@@ -3,7 +3,7 @@
  *
  * TRY/THROW/CATCH example
  * Reference: http://www.di.unipi.it/~nids/docs/longjump_try_trow_catch.html
- *
+ * use gcc -E -P exception_handling_1.c to the output of the preprocessor
  */
 
 #include <stdio.h>
