@@ -8,17 +8,15 @@
  * release -> /proc/sys/kernel/release
  *
  * Sample output
- * ----------------------------------------------------------------------
- *  » ./uname_example
+ * -----------------------------------------------------------------------
  *  Kernel name: Linux
  *  Hostname: ubuntu
  *  Kernel Release: 3.8.0-19-generic
  *  Kernel version: #29-Ubuntu SMP Wed Apr 17 18:16:28 UTC 2013
  *  Machine : x86_64
  *  NIS Domain name: (none)
- * ----------------------------------------------------------------------
+ *
  */
-
 
 #define _GNU_SOURCE
 #include <errno.h>
