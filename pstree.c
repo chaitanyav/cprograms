@@ -18,11 +18,9 @@
 #include <unistd.h>
 
 typedef struct process_info {
- char *name;
- int *children;
- int num_children;
+  int pid;
+  char name[64];
 } process_info;
-
 
 void err_exit(const char *format, ...) {
   va_list args;
@@ -32,6 +30,51 @@ void err_exit(const char *format, ...) {
   va_end(args);
 
   exit(EXIT_FAILURE);
+}
+
+char *read_from_file(int fd, size_t num_bytes) {
+  size_t num_bytes_read;
+  char *read_buf;
+
+  if(num_bytes == 0) {
+    return NULL;
+  } else {
+    read_buf = (char *)malloc(sizeof(char) * num_bytes);
+    if(read_buf != NULL) {
+      if((num_bytes_read = read(fd, read_buf, num_bytes)) != 0) {
+        if(num_bytes != -1) {
+          close(fd);
+          return read_buf;
+        } else {
+          return NULL;
+        }
+      } else {
+        return NULL;
+      }
+    } else {
+      return NULL;
+    }
+  }
+}
+
+int max_processes() {
+  int fd;
+  char filename[64];
+  char *read_buf;
+  int max_procs = 0;
+  sprintf(filename, "/proc/sys/kernel/pid_max");
+
+  fd = open(filename, O_RDONLY);
+  if(fd != -1) {
+    read_buf = read_from_file(fd, 64);
+
+    if(read_buf != NULL) {
+      sscanf(read_buf, "%d", &max_procs);
+      free(read_buf);
+    }
+  }
+
+  return max_procs;
 }
 
 int *resize_list(int *list, int *current_size) {
@@ -55,7 +98,7 @@ int *active_processes(void) {
   int num_processes = 0;
   int list_index = 0;
   int list_size = 25;
-
+  int pid;
 
   dirp = opendir("/proc");
 
@@ -69,15 +112,15 @@ int *active_processes(void) {
     proc_list[0] = num_processes;
     list_index = 1;
     while((direntp = readdir(dirp)) != NULL) {
-      if(atoi(direntp->d_name) != 0) {
-        proc_list[list_index++] = atoi(direntp->d_name);
+      pid = atoi(direntp->d_name);
+      if(pid != 0) {
+        proc_list[list_index++] = pid;
         num_processes++;
 
         if(list_index >= list_size) {
           proc_list = resize_list(proc_list, &list_size);
         }
       }
-
     }
 
     proc_list[0] = num_processes;
@@ -89,50 +132,51 @@ int *active_processes(void) {
   return proc_list;
 }
 
-void extract_ppid_and_name(int fd, char *name, int *ppidp) {
-  size_t num_bytes_read;
-  char read_buf[512];
-  if((num_bytes_read = read(fd, read_buf, 512)) != 0) {
-    if(num_bytes_read != -1) {
-
-    }
-  }
-}
-
 void print_process_tree(int *proc_list) {
-  char filename[64];
-  int fd;
+  char filename[64], token1[64], token2[64], proc_name[64], *read_buf;
+  int fd, i;
   int num_processes = proc_list[0];
-  int i;
-  char pid_str[8];
-  char proc_name[64];
-  ENTRY item;
-  ENTRY *found_item;
+  char *str;
+  int ppid;
 
+    printf("PID\tNAME\tPPID\n");
+    printf("-------------------------------------\n");
+    for(i = 1; i < num_processes; i++) {
+      sprintf(filename, "/proc/%d/status", proc_list[i]);
 
-  if(hcreate(num_processes) == 0) {
-    err_exit("Error on hcreate: %s, %d\n", strerror(errno), __LINE__);
-  }
+      fd = open(filename, O_RDONLY);
+      if(fd != -1) {
 
-  for(i = 1; i < num_processes; i++) {
-    sprintf(filename, "/proc/%d/status", proc_list[i]);
+        read_buf = read_from_file(fd, 512);
+        if(read_buf != NULL) {
 
-    fd = open(filename, O_RDONLY);
-    if(fd != -1) {
+          str = strtok(read_buf, "\n");
+          while(str != NULL) {
+            sscanf(str, "%s %s", token1, token2);
 
-        memset(pid_str, 0, 8);
-        sprintf(pid_str, "%d", proc_list[i]);
-        item.key = pid_str;
+            if(strcmp(token1, "Name:") == 0) {
+              sprintf(proc_name, "%s", token2);
+            }
+
+            if(strcmp(token1, "PPid:") == 0) {
+              ppid = atoi(token2);
+            }
+
+            str = strtok(NULL, "\n");
+          }
+
+          free(read_buf);
+        }
+      }
+      printf("%d\t%-8s\t%d\n", proc_list[i], proc_name, ppid);
     }
-  }
 }
 
 int main(int argc, char *argv[]) {
   int *proc_list;
-  int i;
-
   proc_list = active_processes();
   print_process_tree(proc_list);
 
+  free(proc_list);
   exit(EXIT_SUCCESS);
 }
