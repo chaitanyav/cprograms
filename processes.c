@@ -2,7 +2,7 @@
  * Author: NagaChaitanya Vellanki
  *
  *
- * pstree implementation
+ * print process id, name, parent process id and command
  */
 
 #define _GNU_SOURCE
@@ -16,11 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-typedef struct process_info {
-  int pid;
-  char name[64];
-} process_info;
 
 void err_exit(const char *format, ...) {
   va_list args;
@@ -39,11 +34,13 @@ char *read_from_file(int fd, size_t num_bytes) {
   if(num_bytes == 0) {
     return NULL;
   } else {
+    num_bytes++;
     read_buf = (char *)malloc(sizeof(char) * num_bytes);
     if(read_buf != NULL) {
       if((num_bytes_read = read(fd, read_buf, num_bytes)) != 0) {
         if(num_bytes != -1) {
           close(fd);
+          read_buf[num_bytes_read] = '\0';
           return read_buf;
         } else {
           return NULL;
@@ -54,6 +51,29 @@ char *read_from_file(int fd, size_t num_bytes) {
     } else {
       return NULL;
     }
+  }
+}
+
+void print_process_command_line(int pid) {
+  int fd, i;
+  char filename[64];
+  char read_buf[512];
+  size_t num_bytes_read;
+
+  sprintf(filename, "/proc/%d/cmdline", pid);
+
+  fd = open(filename, O_RDONLY);
+  if(fd != -1) {
+    while(((num_bytes_read = read(fd, read_buf, 512)) != 0) && (num_bytes_read != -1)) {
+      for(i = 0; i < num_bytes_read; i++) {
+        if(read_buf[i] == 0) {
+          printf(" ");
+        } else {
+          printf("%c", read_buf[i]);
+        }
+      }
+    }
+    printf("\n");
   }
 }
 
@@ -139,8 +159,8 @@ void print_process_tree(int *proc_list) {
   char *str;
   int ppid;
 
-    printf("PID\tNAME\tPPID\n");
-    printf("-------------------------------------\n");
+    printf("PID\t%-20s\tPPID\tCOMMAND\n", "NAME");
+    printf("--------------------------------------------------\n");
     for(i = 1; i < num_processes; i++) {
       sprintf(filename, "/proc/%d/status", proc_list[i]);
 
@@ -168,7 +188,8 @@ void print_process_tree(int *proc_list) {
           free(read_buf);
         }
       }
-      printf("%d\t%-8s\t%d\n", proc_list[i], proc_name, ppid);
+      printf("%d\t%-20s\t%d\t", proc_list[i], proc_name, ppid);
+      print_process_command_line(proc_list[i]);
     }
 }
 
