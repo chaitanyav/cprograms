@@ -144,7 +144,8 @@ int *active_processes(void) {
     }
 
     proc_list[0] = num_processes;
-    assert(num_processes == (list_index - 1));
+    /* assert(num_processes == (list_index - 1)); */
+    closedir(dirp);
   } else {
     err_exit("Error on opendir, %s\n", strerror(errno));
   }
