@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error on munmap: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
       }
+      close(fd);
     }
   } else {
     fprintf(stderr, "Error on open: %s\n", strerror(errno));
