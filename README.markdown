@@ -7,3 +7,4 @@ programming interface. Also contains implementations of GNU coreutils.
  No Starch Press, San Francisco, CA, USA. (http://nostarch.com/tlpi)
 * Linux System Programming: Talking Directly to the Kernel and C Library, 2nd Edition by Robert Love. O'Reilly Media, 
  May 2013. (http://shop.oreilly.com/product/0636920026891.do)
+* https://www.kernel.org/doc/man-pages/
