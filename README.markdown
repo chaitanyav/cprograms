@@ -4,4 +4,6 @@ programming interface. Also contains implementations of GNU coreutils.
 ### References
 ----
 * Michael Kerrisk. 2010. The Linux Programming Interface: A Linux and UNIX System Programming Handbook (1st ed.).  
- No Starch Press, San Francisco, CA, USA.
+ No Starch Press, San Francisco, CA, USA. (http://nostarch.com/tlpi)
+* Linux System Programming: Talking Directly to the Kernel and C Library, 2nd Edition by Robert Love. O'Reilly Media, 
+ May 2013. (http://shop.oreilly.com/product/0636920026891.do)
