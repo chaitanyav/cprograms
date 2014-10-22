@@ -3,6 +3,7 @@
 #include <sys/ptrace.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <machine/reg.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -37,7 +38,12 @@ void launch_debugger() {
 
   do {
     child = wait(&status);
-    fprintf(stdout, "child pid is %u\n", child);
+    struct reg reg_info;
+    ptrace(PT_GETREGS, child, (caddr_t ) &reg_info, 0);
+    fprintf(stdout, "Printing registers of the child process with pid: %u\n", child);
+    fprintf(stdout, "---------------------------------------------------------------\n");
+    fprintf(stdout, "ebp: %u\neip: %u\nss:%u\ngs: %u\nfs: %u\nds: %u\nes: %u\n", reg_info.r_ebp, reg_info.r_eip, reg_info.r_ss, reg_info.r_gs, reg_info.r_fs, reg_info.r_ds, reg_info.r_es);
+    fprintf(stdout, "---------------------------------------------------------------\n");
     if(WIFSTOPPED(status)) {
       fprintf(stdout, "Child process was stopped due to signal %s\n", strsignal(WSTOPSIG(status)));
     }
