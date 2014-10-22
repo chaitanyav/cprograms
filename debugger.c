@@ -14,12 +14,12 @@ void handle_child_signal(int signal) {
 }
 
 void launch_debuggie(char *name) {
-  fprintf(stdout, "launching the debuggie %s\n", name);
+  fprintf(stdout, "launching the debuggie %s, pid is %u\n", name, getpid());
   if(ptrace(PT_TRACE_ME, 0, NULL, 0)) {
     fprintf(stderr, "Error on ptrace code is %d, reason is %s\n", errno, strerror(errno));
     exit(EXIT_FAILURE);
   } else {
-    char *argv[] = {"\\tmp", "\\proc"};
+    char *argv[] = {NULL};
     char *env[] = {NULL};
     execve(name, argv, env);
   }
@@ -37,11 +37,12 @@ void launch_debugger() {
 
   do {
     child = wait(&status);
+    fprintf(stdout, "child pid is %u\n", child);
     if(WIFSTOPPED(status)) {
-      fprintf(stdout, "Child process was stopped due to signal %d\n", WSTOPSIG(status));
+      fprintf(stdout, "Child process was stopped due to signal %s\n", strsignal(WSTOPSIG(status)));
     }
     if(WIFSIGNALED(status)) {
-      fprintf(stdout, "Child %u received signal %d\n", child, WTERMSIG(status));
+      fprintf(stdout, "Child %u received signal %s\n", child, strsignal(WTERMSIG(status)));
     }
   }while(!WIFEXITED(status));
 }
