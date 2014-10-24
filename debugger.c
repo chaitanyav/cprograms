@@ -51,6 +51,31 @@
 #include <string.h>
 
 
+void print_eflags(uint32_t eflags) {
+    fprintf(stdout, "---------------------------------------------------------------\n");
+    fprintf(stdout, "Printing all flags\n");
+    fprintf(stdout, "---------------------------------------------------------------\n");
+    fprintf(stdout, "CF: %d\n", (eflags & 1) ? 1 : 0);
+    fprintf(stdout, "RESERVED: %d\n", ((eflags >> 1) & 1) ? 1 : 0);
+    fprintf(stdout, "PF: %d\n", ((eflags >> 2) & 1) ? 1 : 0);
+    fprintf(stdout, "AF: %d\n", ((eflags >> 4) & 1) ? 1 : 0);
+    fprintf(stdout, "ZF: %d\n", ((eflags >> 6) & 1) ? 1 : 0);
+    fprintf(stdout, "SF: %d\n", ((eflags >> 7) & 1) ? 1 : 0);
+    fprintf(stdout, "TF: %d\n", ((eflags >> 8) & 1) ? 1 : 0);
+    fprintf(stdout, "IF: %d\n", ((eflags >> 9) & 1) ? 1 : 0);
+    fprintf(stdout, "DF: %d\n", ((eflags >> 10) & 1) ? 1 : 0);
+    fprintf(stdout, "OF: %d\n", ((eflags >> 11) & 1) ? 1 : 0);
+    fprintf(stdout, "IOPL: %#x\n", (eflags >> 12) & 3);
+    fprintf(stdout, "NT: %d\n", ((eflags >> 14) & 1) ? 1 : 0);
+    fprintf(stdout, "RF: %d\n", ((eflags >> 16) & 1) ? 1 : 0);
+    fprintf(stdout, "VM: %d\n", ((eflags >> 17) & 1) ? 1 : 0);
+    fprintf(stdout, "VM: %d\n", ((eflags >> 18) & 1) ? 1 : 0);
+    fprintf(stdout, "VIF: %d\n", ((eflags >> 19) & 1) ? 1 : 0);
+    fprintf(stdout, "VIP: %d\n", ((eflags >> 20) & 1) ? 1 : 0);
+    fprintf(stdout, "ID: %d\n", ((eflags >> 21) & 1) ? 1 : 0);
+    fprintf(stdout, "---------------------------------------------------------------\n");
+}
+
 void print_gpregisters(struct reg reg_info, pid_t child) {
   fprintf(stdout, "Printing General Purpose x86 registers of the child process with pid: %u\n", child);
   fprintf(stdout, "---------------------------------------------------------------\n");
@@ -89,6 +114,7 @@ void print_gpregisters(struct reg reg_info, pid_t child) {
       reg_info.r_ds,
       reg_info.r_es,
       reg_info.r_eflags);
+      print_eflags(reg_info.r_eflags);
   fprintf(stdout, "---------------------------------------------------------------\n");
 }
 
