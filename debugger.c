@@ -1,18 +1,26 @@
-/* Reference http://www.alexonlinux.com/how-debugger-works */
+/* Author: NagaChaitanya Vellanki */
+/* Program works only on FreeBSD */
 
-/* Sample Output:
- * Parent pid is:1668 Child pid is:7144
+/* References:
+ * 1. http://www.alexonlinux.com/how-debugger-works
+ * 2. Free BSD Kernel source code
+*/
+
+/* Sample Output
+ * ---------------------------------------------------------------------------
+ *
+ * Parent pid is:1750 Child pid is:11257
  * launching the debugger
- * Pid is 7144
- * Parent pid is:7144 Child pid is:0
- * launching the debuggie ./loop, pid is 7147
- * Printing General Purpose x86 registers of the child process with pid: 7147
+ * Pid is 11257
+ * Parent pid is:11257 Child pid is:0
+ * launching the debuggie ./loop, pid is 11258
+ * Printing General Purpose x86 registers of the child process with pid: 11258
  * ---------------------------------------------------------------
  *  trapno: 0xfffff800
  *  ebp: 0x603750
  *  eip: 0x603750
  *  esp: 0xffffddc8
- *  esi: 0x32e0000
+ *  esi: 0x53c1000
  *  edi: 0xfffff800
  *  eax: 0x1b
  *  ebx: 0x202
@@ -26,7 +34,29 @@
  *  es: 0
  *  eflags: 0x202
  *  ---------------------------------------------------------------
- *  Printing Debug x86 registers of the child process with pid: 7147
+ *  Printing all flags
+ *  ---------------------------------------------------------------
+ *  CF: 0
+ *  RESERVED: 1
+ *  PF: 0
+ *  AF: 0
+ *  ZF: 0
+ *  SF: 0
+ *  TF: 0
+ *  IF: 1
+ *  DF: 0
+ *  OF: 0
+ *  IOPL: 0
+ *  NT: 0
+ *  RF: 0
+ *  VM: 0
+ *  VM: 0
+ *  VIF: 0
+ *  VIP: 0
+ *  ID: 0
+ *  ---------------------------------------------------------------
+ *  ---------------------------------------------------------------
+ *  Printing Debug x86 registers of the child process with pid: 11258
  *  ---------------------------------------------------------------
  *  Debug Address 0:0x13
  *  Debug Address 1:0x3b
@@ -38,7 +68,8 @@
  *  Debug Control: 0
  *  ---------------------------------------------------------------
  *  Child process was stopped due to signal Trace/BPT trap
- * */
+ */
+
 #include <stdio.h>
 #include <sys/ptrace.h>
 #include <sys/types.h>
