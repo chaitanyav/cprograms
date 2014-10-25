@@ -1,6 +1,10 @@
 /* Author: NagaChaitanya Vellanki */
 /* Program works only on FreeBSD */
 
+/* Compiling the program
+ * cc -Wall -Werror -m32 -g -pg -o debugger debugger.c
+ */
+
 /* References:
  * 1. http://www.alexonlinux.com/how-debugger-works
  * 2. http://stereopsis.com/FPU.html
