@@ -194,7 +194,7 @@ void print_fpcontrol_word(uint32_t cw) {
   }
 }
 
-void print_fpregisters(struct fpreg fp_reg_info, pid_t child) {
+void print_fp32registers(struct fpreg fp_reg_info, pid_t child) {
   printf("\nFloating point unit information\n");
   printf("---------------------------------------------------------------\n");
   printf("Floating point environment information\n");
@@ -256,7 +256,7 @@ void print_eflags(uint32_t eflags) {
     printf("---------------------------------------------------------------\n");
 }
 
-void print_gpregisters(struct reg reg_info, pid_t child) {
+void print_gp32registers(struct reg reg_info, pid_t child) {
   printf("Printing General Purpose x86 registers of the child process with pid: %u\n", child);
   printf("---------------------------------------------------------------\n");
   printf(
@@ -298,7 +298,7 @@ void print_gpregisters(struct reg reg_info, pid_t child) {
   printf("---------------------------------------------------------------\n");
 }
 
-void print_dbgregisters(struct dbreg debug_reg_info, pid_t child) {
+void print_dbg32registers(struct dbreg debug_reg_info, pid_t child) {
   printf("Printing Debug x86 registers of the child process with pid: %u\n", child);
   printf("---------------------------------------------------------------\n");
   for(int i = 0; i < 8; i++) {
@@ -359,9 +359,9 @@ void launch_debugger() {
     ptrace(PT_GETREGS, child, (caddr_t ) &reg_info, 0);
     ptrace(PT_GETREGS, child, (caddr_t ) &debug_reg_info, 0);
     ptrace(PT_GETFPREGS, child, (caddr_t ) &fp_reg_info, 0);
-    print_gpregisters(reg_info, child);
-    print_dbgregisters(debug_reg_info, child);
-    print_fpregisters(fp_reg_info, child);
+    print_gp32registers(reg_info, child);
+    print_dbg32registers(debug_reg_info, child);
+    print_fp32registers(fp_reg_info, child);
 
     if(WIFSTOPPED(status)) {
       printf("Child process was stopped due to signal %s\n", strsignal(WSTOPSIG(status)));
